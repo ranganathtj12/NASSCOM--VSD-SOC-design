@@ -1,1 +1,1 @@
-# Ranganath-T-J
+# NASSCOM-VSD-SoC-Design-Program
