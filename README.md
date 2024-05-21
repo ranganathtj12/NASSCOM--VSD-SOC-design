@@ -478,4 +478,4 @@ magic -T /home/vsduser/Desktop/work/tools/openlane_working_dir/pdks/sky130A/libs
 
 *https://sourceforge.net/projects/ngspice/
 
-*Workshop Github material
+*https://sourceforge.net/projects/ngspice/
