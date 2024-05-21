@@ -85,9 +85,10 @@ To select the pmos and nmos device select the poly and diffusion layer intersect
 
 ### Lab steps to extract spice netlist from std cell layout.
 For characterizing this inverter in Ngspice we need the SPICE file , to ectract SPICE from the layout use these commands.                                                                              
-    ```
-       extract all
+    ``` extract all
+       
        ext2spice cthresh0 rthresh0
+       
        ext2spice
     ```
 ![VirtualBox_vsdworkshop_20_05_2024_12_28_07](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/163608a4-2db3-4409-bc0e-b8296aef3cd6)
@@ -132,13 +133,23 @@ Cell Fall delay -It is the time taken for the 50% of transition from high to low
 
 Fall Delay = (4.07768-4.0501) e-09 = 27.58 ps
 ### Lab introduction to Magic and steps to load Sky130 tech-rules.
-Download the lab files for DRC error fixing exercise using the command                                                                                                                                             wget http://opencircuitdesign.com/open_pdks/archive/drc_tests.tgz                                                                                                                                   
-      To start magic tool,                                                                                                                                                                                  
+Download the lab files for DRC error fixing exercise using the command                                                                                                                                             
+wget http://opencircuitdesign.com/open_pdks/archive/drc_tests.tgz                                                                                                                                   
+      
+To start magic tool,                                                                                                                                                                                  
+      ```
       magic -d XR
+      ```
 
 Open met met3.mag file , different layout with different rule numbers can be seen.
 ![VirtualBox_vsdworkshop_20_05_2024_13_53_28](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/21635f0f-4d20-4c8d-96d5-1e484cd3efaf)
 ![VirtualBox_vsdworkshop_20_05_2024_14_03_34](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/cdd2fbd3-4fe9-46bb-8efe-89054855a5c9)
+
+select an area and fill metal3 , enter command ciff see via2 so that via mask is placed on metal 3
+
+![VirtualBox_vsdworkshop_20_05_2024_14_40_53](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/02056ee5-2884-404c-844c-fcf771a8581b)
+![VirtualBox_vsdworkshop_20_05_2024_15_11_20](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/a915e55e-e519-4ce1-97e0-5bdc7620a7c4)
+![VirtualBox_vsdworkshop_20_05_2024_15_11_32](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/b6d1d96d-fea9-4961-9d46-11cf55140bd8)
 
 There are some viloations so make some changes in sky130A.tech file which are as follows:
 ![VirtualBox_vsdworkshop_20_05_2024_13_53_39](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/b437be93-2f3a-43db-90e5-291ce65e1ee7)
@@ -146,5 +157,321 @@ There are some viloations so make some changes in sky130A.tech file which are as
 Now execute the commands drc style drc(full) drc check.
 
 ## 4. Pre-layout timing analysis and clock tree synthesis
+   The next process is to get the .lef file from the inverter and use that file in picorv32 design flow
+   While designing standard cell following needs to be considered
+   
+   * The Input and output ports must lie on the intersection of the Vertical and Horizontal tracks.
+   * The width of the standard cell should be an odd multiple of the track pitch and height should be an odd multiple of track vertical pitch.
+
+Open the tracks.info
+![VirtualBox_vsdworkshop_20_05_2024_23_01_18](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/7c1849c3-e405-4cc5-8355-78b842faab87)
+
+From this file it can be infered that for layers li1, metal 1, and metal 2, each track is positioned at (0.23, 0.46)um in the horizontal direction and (0.17, 0.34)um in the vertical direction.
+
+In the layout ports are on the li1 layer , translate the grid into the tracks in order to ensure that the ports are at the intersection of the tracks.
+
+To change grid into tracks first open the tracks file and then in console window type help grid command.
+
+![VirtualBox_vsdworkshop_20_05_2024_23_04_55](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/e955ce13-3411-4fc6-a87b-c45854b76b23)
+
+Now the tracks can be seen on the layout.
+
+![VirtualBox_vsdworkshop_20_05_2024_23_13_48](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/0962b29e-054c-4905-a0a7-ee68a5c7c836)
+
+Its clear that the ports are at the intersection of the tracks.
+
+### Lab steps to convert magic layout to std cell LEF.
+![VirtualBox_vsdworkshop_20_05_2024_23_13_48](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/0b410a31-42d3-4644-a3da-1095ba961b4d)
+
+To extract the lef file ,enter the below command in the tckon window.
+```
+lef write
+```
+![VirtualBox_vsdworkshop_20_05_2024_23_18_50](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/b53958ab-74e8-4f2c-9819-41eb1b3952cf)
+
+![VirtualBox_vsdworkshop_20_05_2024_23_23_12](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/9139b513-5609-4d5b-af81-06ee78c8173f)
+
+.lef file is generated in the current directory.
+![VirtualBox_vsdworkshop_20_05_2024_23_24_35](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/4b9644c8-9752-4ee3-99f8-2a3ae4522998)
+
+### Introduction to timing libs and steps to include new cell in synthesis
+.lef file has been created, the next step is to add use this file for picorv32a
+For that .lef needs to be copied in src folder
+![VirtualBox_vsdworkshop_20_05_2024_23_29_26](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/6dc9fa2d-1838-453c-86b0-05e041671564)
+
+Copy the required libraries i.e .lib files to src directory
+![VirtualBox_vsdworkshop_20_05_2024_23_31_46](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/b1516dbe-300a-414c-a818-e39de537df5d)
+![VirtualBox_vsdworkshop_20_05_2024_23_32_25](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/f28395ae-aea4-4d02-ad68-ecedd73f6586)
+![VirtualBox_vsdworkshop_20_05_2024_23_35_26](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/22b124db-a65f-4000-a11d-9403e341585a)
+![VirtualBox_vsdworkshop_20_05_2024_23_37_34](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/5f78d522-aaa3-4225-bef4-a69bf0b2cb6a)
+![VirtualBox_vsdworkshop_20_05_2024_23_41_43](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/0d9f78a5-4275-4398-95a7-8aefd5e17c8c)
+![VirtualBox_vsdworkshop_20_05_2024_23_43_20](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/2c6b569a-35b9-429e-9c3a-2c7518ca1d1f)
+![VirtualBox_vsdworkshop_21_05_2024_01_00_16](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/4377c535-423f-4d57-8fe7-607101c61603)
+
+Next step is to edit the config.tcl of picorv32a design to include these files
+![VirtualBox_vsdworkshop_21_05_2024_00_59_37](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/e6eeb698-ec7a-4b85-bd89-676264d572ff)
+
+Go to the openLANE flow and run synthesis
+
+for that use these commands in docker
+
+```
+./flow.tcl -interactive
+
+package require openlane 0.9
+
+prep -design picorv32a
+
+set lefs [glob $::env(DESIGN_DIR)/src/*.lef]
+      
+add_lefs -src $lefs
+
+run_synthesis
+```
+
+![VirtualBox_vsdworkshop_21_05_2024_01_06_58](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/1ecda152-3be2-4a99-97d0-c0f876511b64)
+![VirtualBox_vsdworkshop_21_05_2024_01_06_36](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/1502d342-062e-4a7a-af22-2088e53c1870)
+![VirtualBox_vsdworkshop_21_05_2024_01_45_05](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/dd9c943b-7403-461d-9761-b53c5a0da950)
+
+It can be seen that the inverter cell which was provided is being picked by picorv32a design during synthesis
+
+### Lab steps to configure synthesis settings to fix slack and include vsdinv
+Once the synthesis is run check the slack
+![VirtualBox_vsdworkshop_21_05_2024_01_45_05](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/e469b9ed-ddb1-4a2f-bf1b-68d5152a4b4e)
+
+wns= -23.89 tns== -711.59.
+
+run the floorplan using command run_floorplan
+
+if any errors are encountered run these commands one after another
+
+```
+init_floorplan
+
+place_io
+
+tap_decap_or
+```
+![VirtualBox_vsdworkshop_21_05_2024_09_58_33](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/6ae03888-7c5b-48a5-a187-25944dc91d1d)
+
+run the placement using command run_placement
+
+Once the placement is done open the placement in Magic tool and zoom in
+The standard cell inverter can be seen in the design
+![VirtualBox_vsdworkshop_21_05_2024_10_01_09](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/256d10ed-781a-4d20-be55-d9cdc79ef9a7)
+![VirtualBox_vsdworkshop_21_05_2024_10_42_18](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/2171e347-25b8-4d33-8f09-1a3f1c05b011)
+![VirtualBox_vsdworkshop_21_05_2024_10_42_35](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/b5937b38-dda9-4a6b-b7a1-d064025f0311)
+![VirtualBox_vsdworkshop_21_05_2024_10_43_52](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/907cec14-4aa9-4caf-8c6c-a2a53500910a)
+![VirtualBox_vsdworkshop_21_05_2024_10_44_30](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/349dfb54-16cf-4171-aba9-2ee148576305)
+The inverter is placed and its aligned , this can be cheked using align command
+
+### Timing Analysis using openSTA
+```
+./flow.tcl -interactive
+
+package require openlane 0.9
+prep -design picorv32a
+set lefs [glob $::env(DESIGN_DIR)/src/*.lef]
+add_lefs -src $lefs
+set ::env(SYNTH_SIZING) 1
+run_synthesis
+```
+Create a pre_sta.conf file for STA analysis in openlane directory.
+![VirtualBox_vsdworkshop_21_05_2024_10_58_43](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/a3bdd60f-e42e-45d4-b491-1b5df54de298)
+![VirtualBox_vsdworkshop_21_05_2024_11_27_08](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/1091ca3e-c5b1-4e51-884b-6bbdff241a9f)
+
+create a my_base.sdc file which will have the constarints in the openlane/designs/picorv32a/src directory
+![VirtualBox_vsdworkshop_21_05_2024_11_29_56](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/e63fc1ec-d802-4f26-a448-acdfa126c466)
+![VirtualBox_vsdworkshop_21_05_2024_11_56_06](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/ad7e36af-f373-43f0-a37d-eed7347fcab4)
+
+Now to run sta in this Desktop/work/tools/openlane_working_dir/openlane using the below command.
+```
+sta pre_sta.conf
+```
+![VirtualBox_vsdworkshop_21_05_2024_13_37_58](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/43a25def-85c9-4fe6-af1e-c26c72365b2e)
+![VirtualBox_vsdworkshop_21_05_2024_13_38_14](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/23821864-1b10-4524-9e11-b13aaa0f9ede)
+Here also the worst negative slack is -23.89. It can be reduced for that check the timing reports.
+
+Look out for the nets having max fanout , then change the drive strength of corresponding gates
+
+To check the connections to a net
+
+```
+report net -connenctions _10566_
+```
+
+Then replace the cell with higher drive strength using this command
+
+```
+replace_cell _13165_ sky130_fd_sc_hd__or3_4
+```
+
+to check timing
+
+```
+report_checks -fields {net cap slew input_pins} -digits 4
+```
+
+Here the or gate with drive strength 2 is has fanout as 4 ,so replace the cell with the cell having drive strength as 4
+
+![VirtualBox_vsdworkshop_21_05_2024_13_59_22](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/6e7b1859-7cc1-4fbf-a863-53f2f9fdfabd)
+
+Now again check STA
+
+![VirtualBox_vsdworkshop_21_05_2024_13_59_02](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/5f24051f-553d-459a-b628-30d32250a24d)
+
+Here it can be seen that the slack has reduced
+
+Repeat the same thing for other cells , the wns can still be reduced
+
+![VirtualBox_vsdworkshop_21_05_2024_13_59_02](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/90e23a94-5b26-4d4b-a4ad-ffd6dea1be6e)
+
+### Clock tree synthesis TritonCTS and signal integrity
+
+Lab steps to run CTS using TritonCTS
+
+The old netlist needs to be replaced with the new netlist in which the timing is improved ,for that first copy the current synthesis.v file as old as the new file will replace the current file.
+
+To generate the new synthesis.v file use the following commad
+
+```
+write verilog  /home/vsduser/Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/runs/05-05_10-43/results/synthesis/picorv32a.synthesis.v
+```
+![VirtualBox_vsdworkshop_21_05_2024_01_06_58](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/17da4271-4ad1-4c8e-8e26-23a65844d3c8)
+
+picorv32a.synthesis.v file is generated
+
+Run the Synthesis , Floorplan and placemnet again
+```
+prep -design picorv32a -tag 05-05_10-43 -overwrite
+set lefs [glob $::env(DESIGN_DIR)/src/*.lef]
+add_lefs -src $lefs
+set ::env(SYNTH_STRATEGY) "DELAY 3"
+set ::env(SYNTH_SIZING) 1
+run_synthesis
+
+init_floorplan
+place_io
+tap_decap_or
+
+run_placement
+```
+
+For clock tree synthesis run this command
+
+```
+run_cts
+```
+![VirtualBox_vsdworkshop_21_05_2024_15_59_29](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/2c9ce6e4-5ef4-47bc-ba44-005061eed6bc)
+![VirtualBox_vsdworkshop_21_05_2024_16_04_50](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/d9bb584c-6dd4-4b3d-8518-0c89e5609cf4)
+After CTS new file is generated
+
+### Post-CTS OpenROAD timing analysis
+```
+openroad
+
+read_lef /openLANE_flow/designs/picorv32a/runs/05-05_10-43/tmp/merged.lef
+read_def /openLANE_flow/designs/picorv32a/runs/05-05_10-43/results/cts/picorv32a.cts.def
+write_db pico_cts.db
+read_db pico_cts.db
+read_verilog /openLANE_flow/designs/picorv32a/runs/05-05_10-43/results/synthesis/picorv32a.synthesis_cts.v
+read_liberty $::env(LIB_SYNTH_COMPLETE)
+link_design picorv32a
+read_sdc /openLANE_flow/designs/picorv32a/src/my_base.sdc
+set_propagated_clock [all_clocks]
+report_checks -path_delay min_max -fields {slew trans net cap input_pins} -format full_clock_expanded -digits 4
+
+exit
+```
+![VirtualBox_vsdworkshop_21_05_2024_16_16_45](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/75161ec7-4f0b-48c1-9d3b-0bd8bf1b246c)
+![VirtualBox_vsdworkshop_21_05_2024_16_18_59](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/e3a0b0e3-db65-4ea7-a34e-52dacfcc3680)
+![VirtualBox_vsdworkshop_21_05_2024_16_19_10](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/b8f04ecd-c85c-4259-9968-ec44d71bd82c)
+
+Lab exercise to replace bigger CTS buffers
+
+first remove the clkbuf_1 from the list by using the below command
+
+```
+set ::env(CTS_CLK_BUFFER_LIST) [lreplace $::env(CTS_CLK_BUFFER_LIST) 0 0]
+```
+
+set the right def file and run cts
+
+```
+set ::env(CURRENT_DEF) /openLANE_flow/designs/picorv32a/runs/05-05_10-43/results/placement/picorv32a.placement.def
+run_cts
+```
+
+To Enter the openROAD flow and check timing , use the following commands
+
+```
+openroad
+read_lef /openLANE_flow/designs/picorv32a/runs/05-05_10-43/tmp/merged.lef
+read_def /openLANE_flow/designs/picorv32a/runs/05-05_10-43/results/cts/picorv32a.cts.def
+write_db pico_cts1.db
+read_db pico_cts1.db
+read_verilog /openLANE_flow/designs/picorv32a/runs/05-05_10-43/results/synthesis/picorv32a.synthesis_cts.v
+read_liberty $::env(LIB_SYNTH_COMPLETE)
+link_design picorv32a
+read_sdc /openLANE_flow/designs/picorv32a/src/my_base.sdc
+set_propagated_clock [all_clocks]
+report_checks -path_delay min_max -fields {slew trans net cap input_pins} -format full_clock_expanded -digits 4
+
+exit
+
+echo $::env(CTS_CLK_BUFFER_LIST)
+set ::env(CTS_CLK_BUFFER_LIST) [linsert $::env(CTS_CLK_BUFFER_LIST) 0 sky130_fd_sc_hd__clkbuf_1]
+echo $::env(CTS_CLK_BUFFER_LIST)
+```
+
+![VirtualBox_vsdworkshop_21_05_2024_16_48_10](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/a0d5ab35-5369-4d7d-8502-520c7a2b8563)
+![VirtualBox_vsdworkshop_21_05_2024_16_49_45](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/406304b7-b3e8-458e-b681-8ef26e17aaff)
+
+## 5. Final step for RTL2GDS using tritinRoute and openSTA
+After running CTS , to build power distribution network (PDN) use this command
+
+```
+gen_pdn
+```
+
+*To check PDN open Magic tool go to /tmp/floorplan/ inside your runs folder and run this command.
+
+```
+magic -T /home/vsduser/Desktop/work/tools/openlane_working_dir/pdks/sky130A/libs.tech/magic/sky130A.tech lef read ../../tmp/merged.lef def read 21-pdn.def &
+```
+![VirtualBox_vsdworkshop_21_05_2024_17_40_38](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/ce0cbd4d-b229-4f7d-b725-ad7955a6cf3f)
+![VirtualBox_vsdworkshop_21_05_2024_17_41_06](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/d92b47c5-b6ae-46d3-a447-fcffb4eb7a5b)
+![VirtualBox_vsdworkshop_21_05_2024_17_41_29](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/107cc410-6719-4c0b-90ad-96d46ce72d4f)
+![VirtualBox_vsdworkshop_21_05_2024_17_41_53](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/fa4ce876-ec7f-4f67-ab98-65e18b79ee77)
+
+The power rails can be seen in this design so PDN is successful
+
+*Now to do the final step i.e routing run this command
+
+```
+run_routing
+```
+
+*Routing is done with zero violations
+
+To view the final design in Magic tool fo to the results/routing/ in your runs folder and then use this command
+
+```
+magic -T /home/vsduser/Desktop/work/tools/openlane_working_dir/pdks/sky130A/libs.tech/magic/sky130A.tech lef read ../../tmp/merged.lef def read picorv32a.def &
+```
+![VirtualBox_vsdworkshop_21_05_2024_18_02_01](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/3d57a78a-879b-4f70-b8c0-3a159173d704)
+![VirtualBox_vsdworkshop_21_05_2024_18_02_47](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/416c602b-6549-4e80-99d5-317f1651d733)
+![VirtualBox_vsdworkshop_21_05_2024_18_04_50](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/4ed945db-4f1b-4a70-b812-e19d579202b0)
+![VirtualBox_vsdworkshop_21_05_2024_18_05_27](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/01dc1866-686f-4d96-a20c-c4e4aa7a928c)
+![VirtualBox_vsdworkshop_21_05_2024_18_14_39](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/8e44e975-e937-4cbf-b5d9-e2e9094c4483)
+
+## Final GDA
+![Screenshot (147)](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/d863f264-9483-482c-b0d0-2d38eb124c9a)
 
 
+## References
+*https://github.com/nickson-jose/vsdstdcelldesign
+*https://github.com/efabless/openlane2
+*https://github.com/google/skywater-pdk
+*https://sourceforge.net/projects/ngspice/
+*Workshop Github material
