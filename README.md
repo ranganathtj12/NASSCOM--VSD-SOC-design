@@ -85,11 +85,12 @@ To select the pmos and nmos device select the poly and diffusion layer intersect
 
 ### Lab steps to extract spice netlist from std cell layout.
 For characterizing this inverter in Ngspice we need the SPICE file , to ectract SPICE from the layout use these commands.                                                                              
-    ``` extract all
+    ``` 
+    extract all
        
-       ext2spice cthresh0 rthresh0
+    ext2spice cthresh0 rthresh0
        
-       ext2spice
+     ext2spice
     ```
 ![VirtualBox_vsdworkshop_20_05_2024_12_28_07](https://github.com/ranganathtj12/NASSCOM--VSD-SOC-design/assets/144826148/163608a4-2db3-4409-bc0e-b8296aef3cd6)
 
