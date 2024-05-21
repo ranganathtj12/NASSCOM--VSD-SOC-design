@@ -471,7 +471,11 @@ magic -T /home/vsduser/Desktop/work/tools/openlane_working_dir/pdks/sky130A/libs
 
 ## References
 *https://github.com/nickson-jose/vsdstdcelldesign
+
 *https://github.com/efabless/openlane2
+
 *https://github.com/google/skywater-pdk
+
 *https://sourceforge.net/projects/ngspice/
+
 *Workshop Github material
